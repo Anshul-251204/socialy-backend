@@ -2,10 +2,11 @@ import { config } from "dotenv";
 config({
     path:"./.env"
 })
-import app from "./app.js";
 import connectDB from "./db/connect.db.js";
 import { v2 as cloudinary } from "cloudinary";
- 
+import app from "./app.js";
+
+
 connectDB()
 	.then(() => {
 		app.listen(process.env.PORT, () =>

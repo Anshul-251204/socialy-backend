@@ -2,6 +2,8 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import Post from "../models/post.model.js";
+import Like from "../models/like.model.js"
+import Comment from "../models/comment.model.js"
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import mongoose from "mongoose";
 
@@ -146,41 +148,9 @@ export const getPostsById = asyncHandler(async (req, res, next) => {
 // @route     GET /api/v1/posts/register
 // @status    public
 // @desc      get all posts of all users
-export const getPostsByUser = asyncHandler(async (req, res, next) => {
-	const { userId } = req.params;
-
-	if (!userId) {
-		throw new ApiError(400, "userId is required");
-	}
-
-	const posts = await Post.aggregate([
-		{
-			$match: {
-				owner: new mongoose.Types.ObjectId(userId),
-			},
-		},
-		{
-			$lookup: {
-				from: "users",
-				localField: "owner",
-				foreignField: "_id",
-				as: "avatar",
-			},
-		},
-		{
-			$addFields: {
-				avatar: {
-					$first: "$avatar.avatar",
-				},
-				userName: {
-					$first: "$avatar.userName",
-				},
-			},
-		},
-	]);
-
-	res.status(200).json(new ApiResponse(200, posts, `All posts of user`));
-});
+export const getUserPost = asyncHandler(async(req,res,next)=>{
+	res.send("fdffd")
+})
 
 // @route     delete /api/v1/posts/:postId
 // @status    Private
@@ -193,6 +163,10 @@ export const deletePosts = asyncHandler(async (req, res, next) => {
 	}
 
 	const deletePost = await Post.findByIdAndDelete(postId);
+
+	 await Promise.all([Post.findByIdAndDelete(postId), Like.deleteMany({post:postId}),Comment.deleteMany({post:postId})]);
+
+	
 
 	res.status(200).json(
 		new ApiResponse(200, deletePost, "this Post is successfully deleted.")

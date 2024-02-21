@@ -4,11 +4,11 @@ import asyncHandler from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
 
 const auth = asyncHandler(async (req, res, next) => {
- 
-	const { accessToken } = req.cookies;
+	
+	const { accessToken } = req?.cookies;
 
 	if (!accessToken) {
-		throw new ApiError(401, "unauthorized user !!!");
+		return next(new ApiError(401, "unauthorized user !!!"));
 	}
 
 	const decodedToken = jwt.verify(
@@ -21,7 +21,7 @@ const auth = asyncHandler(async (req, res, next) => {
 	);
 
 	if (!user) {
-		throw new ApiError(401, "Invail access Token");
+		return next(new ApiError(401, "Invail access Token"));
 	}
 
 	req.user = user;

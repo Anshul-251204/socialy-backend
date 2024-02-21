@@ -4,7 +4,7 @@ import {
 	deletePosts,
 	getAllPosts,
 	getPostsById,
-    getPostsByUser,
+    getUserPost,
     updatePosts,
 } from "../controllers/post.controller.js";
 import upload from "../middlewares/multer.middleware.js";
@@ -21,6 +21,6 @@ router.route("/:postId")
     .patch(updatePosts)
     .delete(deletePosts);
 
-router.route("/user/:userId").get(getPostsByUser);    
+router.route("/userpost").get(auth,getUserPost);    
 
 export default router;

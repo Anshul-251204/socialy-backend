@@ -10,7 +10,7 @@ export const likeToggle = asyncHandler(async (req, res, next) => {
 	const { postId } = req.params;
 
 	const checkIsLiked = await Like.findOne({ post: postId });
-	console.log(checkIsLiked);
+
 	if (!checkIsLiked) {
 		const liked = await Like.create({
 			post: postId,
@@ -34,7 +34,47 @@ export const likeToggle = asyncHandler(async (req, res, next) => {
 export const likedPostOfUser = asyncHandler(async (req, res, next) => {
 	const id = req?.user._id;
 
-	const likedPost = await Like.find({ likedBy: id });
+	const likedPost = await Like.aggregate([
+		{
+			$match: {
+				likedBy: id,
+			},
+		},
+		{
+			$lookup: {
+				from: "users",
+				localField: "likedBy",
+				foreignField: "_id",
+				as: "userName",
+			},
+		},
+		{
+			$addFields: {
+				avatar: {
+					$first: "$userName.avatar",
+				},
+				userName: {
+					$first: "$userName.userName",
+				},
+			},
+		},
+		{
+			$lookup: {
+				from: "posts",
+				localField: "post",
+				foreignField: "_id",
+				as: "post",
+			},
+		},
+		{
+			$addFields: {
+				post: {
+					$first: "$post",
+				},
+				
+			},
+		},
+	]);
 
 	res.status(200).json(
 		new ApiResponse(200, likedPost, "All liked post by users ❤️")

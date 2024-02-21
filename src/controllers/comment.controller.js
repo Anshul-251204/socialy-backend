@@ -8,12 +8,14 @@ import asyncHandler from "../utils/AsyncHandler.js";
 // @status    Private
 // @desc      upload comments
 export const addComment = asyncHandler(async (req, res, next) => {
-
 	const { content } = req.body;
-    const { postId } = req.params;
+	const { postId } = req.params;
+
+
 
 	if (!content) {
-		throw new ApiError(400, "comment is required");
+
+		return next(new ApiError(400, "comment is required"));
 	}
 
 	const comment = await Comment.create({
@@ -31,8 +33,7 @@ export const addComment = asyncHandler(async (req, res, next) => {
 // @status    Private
 // @desc      delete comments
 export const deletecomment = asyncHandler(async (req, res, next) => {
-
-    const { commentId } = req.params;
+	const { commentId } = req.params;
 
 	if (!commentId) {
 		throw new ApiError(400, "comment is required");
@@ -48,15 +49,14 @@ export const deletecomment = asyncHandler(async (req, res, next) => {
 // @route     GET /api/v1/comments/:postId
 // @status    Private
 // @desc      get comments by Post
-export const getCommentByPost = asyncHandler(async(req,res,next)=>{
-    
-    const { postId } = req.params;
+export const getCommentByPost = asyncHandler(async (req, res, next) => {
+	const { postId } = req.params;
 
-    if(!postId){
-        throw new ApiError(400,"post id is required !");
-    }
+	if (!postId) {
+		throw new ApiError(400, "post id is required !");
+	}
 
-    const comments = await Comment.aggregate([
+	const comments = await Comment.aggregate([
 		{
 			$match: {
 				post: new mongoose.Types.ObjectId(postId),
@@ -73,17 +73,58 @@ export const getCommentByPost = asyncHandler(async(req,res,next)=>{
 		{
 			$addFields: {
 				avatar: {
-					$first: "$avatar",
+					$first: "$avatar.avatar",
 				},
-				avatar: "$avatar.avatar",
-				userName: "$avatar.userName",
+				userName: {
+					$first: "$avatar.userName",
+				},
+			},
+		},{
+			$sort:{
+				createdAt:-1
+			}
+		}
+	]);
+
+	res.status(200).json(new ApiResponse(200, comments, "all comments"));
+});
+
+
+export const getCommentOfUser = asyncHandler(async (req, res, next) => {
+	
+	const id = req?.user._id;
+	
+	const comments = await Comment.aggregate([
+		{
+			$match: {
+				commentBy: new mongoose.Types.ObjectId(id),
+			},
+		},
+		{
+			$lookup: {
+				from: "users",
+				localField: "commentBy",
+				foreignField: "_id",
+				as: "avatar",
+			},
+		},
+		{
+			$addFields: {
+				avatar: {
+					$first: "$avatar.avatar",
+				},
+				userName: {
+					$first: "$avatar.userName",
+				},
+			},
+		},
+		{
+			$sort: {
+				createdAt: -1,
 			},
 		},
 	]);
 
-
-    res.status(200).json(
-        new ApiResponse(200, comments, "all comments")
-    )
-})
+	res.status(200).json(new ApiResponse(200, comments, "all comments"));
+});
 

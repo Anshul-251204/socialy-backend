@@ -29,20 +29,20 @@ const registerUser = asyncHandler(async (req, res, next) => {
 	const { fullName, userName, email, password } = req.body;
 
 	if (!fullName || !userName || !email || !password) {
-		throw new ApiError(400, "All Fields Are Required !");
+		return next(new ApiError(400, "All Fields Are Required !"));
 	}
 
 	const avatarLocalPath = req.file?.path;
 
 	if (!avatarLocalPath) {
-		throw new ApiError(400, "Avatar Is Required !");
+		return next(new ApiError(400, "Avatar Is Required !"));
 	}
 
 	const existsUser = await User.findOne({ userName: userName });
 
 	if (existsUser) {
 		fs.unlinkSync(avatarLocalPath);
-		throw new ApiError(400, "User Is Already Exists !");
+		return next(new ApiError(400, "User Is Already Exists !"));
 	}
 
 	const avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -78,7 +78,9 @@ const registerUser = asyncHandler(async (req, res, next) => {
 	);
 
 	if (!registerUser) {
-		throw new ApiError(500, "internal server error while creating user!");
+		return next(
+			new ApiError(500, "internal server error while creating user!")
+		);
 	}
 
 	res.status(200)
@@ -120,12 +122,13 @@ const loginUser = asyncHandler(async (req, res, next) => {
 	const optionsForAccess = {
 		httpOnly: true,
 		secure: true,
+		expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 	};
 
 	const optionsForResfresh = {
 		httpOnly: true,
 		secure: true,
-		expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+		expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 	};
 
 	res.status(200)
@@ -134,7 +137,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 		.json(new ApiResponse(200, logedInUser, "User Loged in Successfully."));
 });
 
-// @route      POSt /api/v1/users/logout
+// @route      POSt /api/v1/users/update
 // @status     Private
 // @desc       logout user
 const logoutUser = asyncHandler(async (req, res, next) => {
@@ -169,9 +172,10 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
 const updateDetails = asyncHandler(async (req, res, next) => {
 	const { email, fullName } = req.body;
+	console.log();
 
 	if (!email || !fullName) {
-		throw new ApiError(400, "all Fields are required");
+		return next(new ApiError(400, "all Fields are required"));
 	}
 
 	const user = await User.findByIdAndUpdate(
@@ -195,6 +199,8 @@ const updateDetails = asyncHandler(async (req, res, next) => {
 // @status     public
 // @desc       change profile of user
 const updateAvatar = asyncHandler(async (req, res, next) => {
+
+	
 	const avatarLocalPath = req.file?.path;
 
 	if (!avatarLocalPath) {
@@ -368,20 +374,21 @@ const getUserProfile = asyncHandler(async (req, res, next) => {
 		},
 	]);
 
-	
 	if (req.user) {
 		let isfollowing = await Follow.findOne({
 			user: req?.user._id,
 			follower: profilePage[0]._id,
 		});
-		console.log(req.user._id, profilePage[0]._id);
 
+		
 		isfollowing
 			? (profilePage[0].isfollow = true)
 			: (profilePage[0].isfollow = false);
 	}
 
-	res.status(200).json(profilePage);
+	res.status(200).json(
+		new ApiResponse(200,profilePage[0], "your profile pages")
+	);
 });
 // @route      patch /api/v1/users/refreshtoken
 // @status     Private
@@ -462,6 +469,28 @@ const toogleAccountStatus = asyncHandler(async (req, res, next) => {
 	);
 });
 
+const searchUserByUserName = asyncHandler(async (req, res, next) => {
+	
+	const { query } = req.query;
+
+	if (!query) {
+		return next(new ApiError(400, "query is requried"));
+	}
+	const users = await User.aggregate([
+		{
+			$match: { userName: { $regex: query, $options: "i" } },
+		},
+		{
+			$project: {
+				avatar: 1,
+				userName: 1,
+			},
+		},
+	]);
+
+	res.status(200).json(new ApiResponse(200, users, "all User"));
+});
+
 export {
 	registerUser,
 	loginUser,
@@ -471,6 +500,7 @@ export {
 	updateDetails,
 	deleteUser,
 	toogleAccountStatus,
+	searchUserByUserName,
 	refreshToken,
 	updateBio,
 	getUserProfile,
