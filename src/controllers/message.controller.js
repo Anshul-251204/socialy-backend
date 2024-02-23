@@ -34,6 +34,7 @@ export const sendMessage = asyncHandler(async (req, res, next) => {
 
 
 	if (newMessage) {
+		conversation.lastMessage = message
 		conversation.message.push(newMessage._id);
 	}
 
@@ -56,7 +57,7 @@ export const getMessage = asyncHandler(async(req,res,next)=>{
     }).populate("message")
 
     res.status(200).json(
-        new ApiResponse(200, conversation, "all message")
+        new ApiResponse(200, conversation.message, "all message")
     )   
     
 })

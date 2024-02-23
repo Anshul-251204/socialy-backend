@@ -52,7 +52,7 @@ const storySchema = mongoose.Schema({
 			required:true
 		}
 	}
-});
+},{ timestamps:true});
 
 const Story = mongoose.model("Story", storySchema);
 

@@ -13,7 +13,7 @@ export const uploadStory = asyncHandler(async(req,res,next)=>{
     const localFilePath = req.file?.path;
 
     if(!localFilePath) {
-        throw new ApiError(400,"Image is required !")
+       return next(new ApiError(400,"Image is required !"));
     }
 
     const image = await uploadOnCloudinary(localFilePath);
@@ -37,3 +37,35 @@ export const uploadStory = asyncHandler(async(req,res,next)=>{
 // @route     get /api/v1/story/
 // @status    private
 // @desc      getfriend story user
+export const getStory = asyncHandler(async(req,res,next)=>{
+   const story = await Story.aggregate([
+	
+		{
+			$lookup: {
+				from: "users",
+				localField: "owner",
+				foreignField: "_id",
+				as: "avatar",
+			},
+		},
+		{
+			$addFields: {
+				avatar: {
+					$first: "$avatar.avatar.url",
+				},
+				userName: {
+					$first: "$avatar.userName",
+				},
+			},
+		},
+		{
+			$sort: {
+				createdAt: -1,
+			},
+		},
+   ]);
+
+    res.status(200).json(
+        new ApiResponse(200,story,"all stories")
+    )
+})
