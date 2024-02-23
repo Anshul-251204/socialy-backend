@@ -13,6 +13,7 @@ export const uploadOnCloudinary = async (localFilePath) => {
 		//upload the file on cloudinary
 		const response = await cloudinary.uploader.upload(localFilePath, {
 			resource_type: "auto",
+			max_bytes: 2 * 1024 * 1024,
 		});
 
 		fs.unlinkSync(localFilePath);
