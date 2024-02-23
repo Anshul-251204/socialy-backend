@@ -26,6 +26,10 @@ import messageRouter from "./routes/message.routes.js";
 import conversationRouter from "./routes/conversation.routes.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 
+app.get("/",(req,res)=>{
+	res.send("working fine")
+})
+
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/posts",postRouter);
 app.use("/api/v1/comments", commentRouter);
