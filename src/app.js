@@ -5,10 +5,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: [
-			"*",
-			"https://iinnsstagramclone.netlify.app/",
-		],
+		origin: ["https://socialyyy.netlify.app/" , "https://socialyyy.netlify.app"],
 		credentials: true,
 	})
 );
