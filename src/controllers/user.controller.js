@@ -61,12 +61,13 @@ const registerUser = asyncHandler(async (req, res, next) => {
 	const optionsForAccess = {
 		httpOnly: true,
 		secure: true,
+		 sameSite:"none",
 	};
 
 	const optionsForResfresh = {
 		 httpOnly:true,
        		 secure:true,
-        	 sameSite:"none"
+        	 sameSite:"none",
 		 expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
 	};
 
@@ -123,13 +124,14 @@ const loginUser = asyncHandler(async (req, res, next) => {
 	const optionsForAccess = {
 		httpOnly:true,
         	secure:true,
-       		sameSite:"none"
+       		sameSite:"none",
 		expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 	};
 
 	const optionsForResfresh = {
 		httpOnly: true,
 		secure: true,
+		 sameSite:"none",
 		expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
 	};
 
