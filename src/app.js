@@ -5,7 +5,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: ["*", "http://localhost:5173"],
+		origin: ["*", "http://localhost:5173", "https://transcendent-manatee-d7eaa5.netlify.app"],
 		credentials:true
 	})
 );
