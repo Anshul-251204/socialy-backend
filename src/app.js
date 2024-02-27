@@ -5,7 +5,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: ["*", "http://localhost:5173", "https://transcendent-manatee-d7eaa5.netlify.app","https://socially-frontend.vercel.app","https://main.d2brvap7feebwm.amplifyapp.com"],
+		origin: ["*", "http://localhost:5173","https://main.d2u10942l1ad23.amplifyapp.com"],
 		credentials:true
 	})
 );
